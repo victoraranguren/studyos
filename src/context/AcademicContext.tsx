@@ -6,6 +6,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import {
@@ -95,8 +96,9 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
   const [syncStatusMessage, setSyncStatusMessage] = useState<string | null>(
     null
   );
+  const skipNextAutoSyncRef = useRef(true);
 
-  // Hidratar desde LocalStorage (o Supabase si está activo)
+  // Hidratar desde PostgreSQL / Supabase (con respaldo en LocalStorage)
   useEffect(() => {
     let mounted = true;
     async function init() {
@@ -114,17 +116,21 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
         if (raw) {
           const parsed = JSON.parse(raw) as AcademicDatabaseState;
           if (parsed && Array.isArray(parsed.subjects) && Array.isArray(parsed.tasks)) {
-            if (mounted) setState(parsed);
+            if (mounted) {
+              skipNextAutoSyncRef.current = true;
+              setState(parsed);
+            }
           }
         }
         if (defaultStorageMode === 'supabase' && isSupabaseConfigured) {
           const remote = await fetchAllFromSupabase();
-          if (remote && remote.subjects.length > 0 && mounted) {
+          if (remote && mounted) {
+            skipNextAutoSyncRef.current = true;
             setState(remote);
           }
         }
       } catch (e) {
-        console.warn('Error cargando estado inicial en memoria:', e);
+        console.warn('Error cargando estado inicial:', e);
       } finally {
         if (mounted) setIsHydrated(true);
       }
@@ -135,13 +141,27 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Guardar en memoria persistente del navegador cada vez que cambie el estado
+  // Guardar automáticamente en LocalStorage + Base de Datos PostgreSQL/Supabase en cada cambio
   useEffect(() => {
     if (!isHydrated) return;
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {
       console.warn('No se pudo persistir en localStorage:', e);
+    }
+
+    if (skipNextAutoSyncRef.current) {
+      skipNextAutoSyncRef.current = false;
+      return;
+    }
+
+    if (defaultStorageMode === 'supabase') {
+      const timer = setTimeout(() => {
+        syncStateToSupabase(state).catch((err) =>
+          console.warn('Error en auto-sync con base de datos:', err)
+        );
+      }, 350);
+      return () => clearTimeout(timer);
     }
   }, [state, isHydrated]);
 

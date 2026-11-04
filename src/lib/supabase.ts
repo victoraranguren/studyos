@@ -9,22 +9,17 @@ import {
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-const storageModeEnv = process.env.NEXT_PUBLIC_STORAGE_MODE || 'memory';
+const storageModeEnv = process.env.NEXT_PUBLIC_STORAGE_MODE || 'supabase';
 
-export const isSupabaseConfigured = Boolean(
-  supabaseUrl &&
-    supabaseAnonKey &&
-    !supabaseUrl.includes('tu-proyecto.supabase.co') &&
-    !supabaseAnonKey.includes('tu-anon-key')
-);
+export const isSupabaseConfigured = true;
 
 export const defaultStorageMode: 'memory' | 'supabase' =
-  storageModeEnv === 'supabase' && isSupabaseConfigured ? 'supabase' : 'memory';
+  storageModeEnv === 'memory' ? 'memory' : 'supabase';
 
 let clientInstance: SupabaseClient | null = null;
 
 export function getSupabaseClient(): SupabaseClient | null {
-  if (!isSupabaseConfigured) return null;
+  if (!supabaseUrl || !supabaseAnonKey) return null;
   if (!clientInstance) {
     clientInstance = createClient(supabaseUrl, supabaseAnonKey);
   }
@@ -32,10 +27,24 @@ export function getSupabaseClient(): SupabaseClient | null {
 }
 
 // ============================================================================
-// MAPPERS ENTRE MODELO EN MEMORIA Y TABLAS SQL DE SUPABASE
+// LECTURA Y ESCRITURA EN POSTGRESQL / SUPABASE (VÍA /api/db + SUPABASE FALLBACK)
 // ============================================================================
 
 export async function fetchAllFromSupabase(): Promise<AcademicDatabaseState | null> {
+  // 1. Intentar primero vía API route (/api/db con Prisma + DATABASE_URL) que auto-crea tablas y semilla
+  try {
+    const res = await fetch('/api/db', { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.ok && data?.state) {
+        return data.state as AcademicDatabaseState;
+      }
+    }
+  } catch (err) {
+    console.warn('Fallback a cliente Supabase directo:', err);
+  }
+
+  // 2. Fallback directo a Supabase REST API
   const supabase = getSupabaseClient();
   if (!supabase) return null;
 
@@ -132,17 +141,37 @@ export async function fetchAllFromSupabase(): Promise<AcademicDatabaseState | nu
 export async function syncStateToSupabase(
   state: AcademicDatabaseState
 ): Promise<{ ok: boolean; message: string }> {
+  // 1. Intentar primero vía API route (/api/db con Prisma + DATABASE_URL)
+  try {
+    const res = await fetch('/api/db', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(state),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data?.ok) {
+        return {
+          ok: true,
+          message: '¡Datos sincronizados con PostgreSQL / Supabase!',
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('Fallback a sincronización vía cliente Supabase:', err);
+  }
+
+  // 2. Fallback directo a Supabase REST API
   const supabase = getSupabaseClient();
   if (!supabase) {
     return {
       ok: false,
       message:
-        'Supabase aún no está configurado en .env.local (NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY).',
+        'No se pudo conectar con PostgreSQL ni con Supabase. Verifica tu archivo .env.',
     };
   }
 
   try {
-    // 1. Upsert config
     const { error: cfgErr } = await supabase.from('student_config').upsert({
       id: 'default_student',
       student_name: state.config.studentName,
@@ -157,7 +186,6 @@ export async function syncStateToSupabase(
     });
     if (cfgErr) throw cfgErr;
 
-    // 2. Upsert subjects
     if (state.subjects.length > 0) {
       const { error: subjErr } = await supabase.from('subjects').upsert(
         state.subjects.map((s) => ({
@@ -179,7 +207,6 @@ export async function syncStateToSupabase(
       if (subjErr) throw subjErr;
     }
 
-    // 3. Upsert schedule
     if (state.schedule.length > 0) {
       const { error: schedErr } = await supabase.from('schedule_blocks').upsert(
         state.schedule.map((b) => ({
@@ -196,7 +223,6 @@ export async function syncStateToSupabase(
       if (schedErr) throw schedErr;
     }
 
-    // 4. Upsert tasks
     if (state.tasks.length > 0) {
       const { error: taskErr } = await supabase.from('academic_tasks').upsert(
         state.tasks.map((t) => ({
@@ -228,10 +254,13 @@ export async function syncStateToSupabase(
 
     return {
       ok: true,
-      message: '¡Datos en memoria sincronizados exitosamente con Supabase!',
+      message: '¡Datos sincronizados exitosamente con Supabase!',
     };
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Error desconocido sincronizando con Supabase';
+    const msg =
+      err instanceof Error
+        ? err.message
+        : 'Error desconocido sincronizando con Supabase';
     return { ok: false, message: msg };
   }
 }

@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model StudentConfigRow {
+  id                 String   @id @default("default_student")
+  studentName        String   @default("Estudiante Ing. Sistemas") @map("student_name")
+  career             String   @default("Ingeniería de Sistemas")
+  university         String   @default("UNEFA")
+  sede               String   @default("Núcleo UNEFA")
+  currentSemester    Int      @default(6) @map("current_semester")
+  sectionCode        String   @default("06S-2614-D1") @map("section_code")
+  weeklyComfortHours Float    @default(14) @map("weekly_comfort_hours")
+  defaultTargetGrade Float    @default(15.0) @map("default_target_grade")
+  updatedAt          DateTime @default(now()) @map("updated_at")
+
+  @@map("student_config")
+}
+
+model SubjectRow {
+  id               String             @id
+  code             String
+  name             String
+  semester         Int                @default(6)
+  credits          Int                @default(4)
+  professor        String             @default("")
+  professorContact String             @default("") @map("professor_contact")
+  section          String             @default("06S-2614-D1")
+  modality         String             @default("Presencial")
+  color            String             @default("blue")
+  targetGrade      Float              @default(15.0) @map("target_grade")
+  generalNotes     String             @default("") @map("general_notes")
+  cortesConfig     Json               @default("[]") @map("cortes_config")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  scheduleBlocks   ScheduleBlockRow[]
+  tasks            AcademicTaskRow[]
+
+  @@map("subjects")
+}
+
+model ScheduleBlockRow {
+  id          String     @id
+  subjectId   String     @map("subject_id")
+  dayOfWeek   Int        @map("day_of_week")
+  startTime   String     @map("start_time")
+  endTime     String     @map("end_time")
+  classroom   String     @default("Aula")
+  sessionType String     @default("Teoría") @map("session_type")
+  notes       String     @default("")
+  createdAt   DateTime   @default(now()) @map("created_at")
+  subject     SubjectRow @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@map("schedule_blocks")
+}
+
+model AcademicTaskRow {
+  id                String     @id
+  subjectId         String     @map("subject_id")
+  corte             Int
+  title             String
+  description       String     @default("")
+  taskType          String     @default("tarea") @map("task_type")
+  status            String     @default("pendiente")
+  dueDate           DateTime   @map("due_date")
+  weightInCorte     Float      @default(10.0) @map("weight_in_corte")
+  estimatedMinutes  Int        @default(120) @map("estimated_minutes")
+  loggedMinutes     Int        @default(0) @map("logged_minutes")
+  energyLevel       String     @default("media") @map("energy_level")
+  flexibilityNote   String     @default("") @map("flexibility_note")
+  grade20           Float?     @map("grade_20")
+  studentNotes      String     @default("") @map("student_notes")
+  teacherFeedback   String     @default("") @map("teacher_feedback")
+  improvementPoints String     @default("") @map("improvement_points")
+  feedbackSentiment String?    @map("feedback_sentiment")
+  attachments       Json       @default("[]")
+  subtasks          Json       @default("[]")
+  createdAt         DateTime   @default(now()) @map("created_at")
+  updatedAt         DateTime   @default(now()) @map("updated_at")
+  subject           SubjectRow @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@map("academic_tasks")
+}
