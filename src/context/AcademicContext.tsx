@@ -125,37 +125,8 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
         if (defaultStorageMode === 'supabase' && isSupabaseConfigured) {
           const remote = await fetchAllFromSupabase();
           if (remote && mounted) {
-            const hasOldFakeDemo = remote.subjects.some(
-              (s) => s.id === 'subj-isw1' || s.professor === 'Ing. Carlos Méndez'
-            );
-            if (hasOldFakeDemo) {
-              const supabase = getSupabaseClient();
-              if (supabase) {
-                await supabase
-                  .from('subjects')
-                  .delete()
-                  .in('id', [
-                    'subj-isw1',
-                    'subj-bd1',
-                    'subj-io',
-                    'subj-so',
-                    'subj-arq',
-                    'subj-din',
-                  ]);
-              }
-              skipNextAutoSyncRef.current = true;
-              setState(INITIAL_ACADEMIC_STATE);
-              await syncStateToSupabase(INITIAL_ACADEMIC_STATE);
-            } else if (remote.subjects.length > 0) {
-              skipNextAutoSyncRef.current = true;
-              setState(remote);
-            } else {
-              // Primera vez que se conecta con las tablas vacías en Supabase: subir datos actuales automáticamente
-              const initialToSync = raw
-                ? (JSON.parse(raw) as AcademicDatabaseState)
-                : INITIAL_ACADEMIC_STATE;
-              await syncStateToSupabase(initialToSync);
-            }
+            skipNextAutoSyncRef.current = true;
+            setState(remote);
           }
         }
       } catch (e) {

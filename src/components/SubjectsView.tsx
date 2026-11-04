@@ -14,6 +14,7 @@ import {
   Edit3,
   Mail,
   Plus,
+  Trash2,
   User,
 } from 'lucide-react';
 
@@ -28,7 +29,7 @@ export function SubjectsView({
   onEditSubject,
   onOpenNewTask,
 }: SubjectsViewProps) {
-  const { state } = useAcademic();
+  const { state, clearAllData } = useAcademic();
 
   return (
     <div className="space-y-6">
@@ -45,14 +46,34 @@ export function SubjectsView({
           </p>
         </div>
 
-        <button
-          type="button"
-          onClick={onOpenNewSubject}
-          className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-sm font-semibold text-white flex items-center gap-1.5 shadow-lg shadow-blue-600/20"
-        >
-          <Plus className="w-4 h-4" />
-          Inscribir Materia UNEFA
-        </button>
+        <div className="flex items-center gap-2 flex-wrap">
+          {state.subjects.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                if (
+                  window.confirm(
+                    '¿Seguro que deseas vaciar todas las materias, horarios y tareas?'
+                  )
+                ) {
+                  clearAllData();
+                }
+              }}
+              className="px-3.5 py-2.5 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/30 text-sm font-semibold text-rose-300 flex items-center gap-1.5"
+            >
+              <Trash2 className="w-4 h-4" />
+              Vaciar Materias
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onOpenNewSubject}
+            className="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-sm font-semibold text-white flex items-center gap-1.5 shadow-lg shadow-blue-600/20"
+          >
+            <Plus className="w-4 h-4" />
+            Inscribir Materia UNEFA
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">

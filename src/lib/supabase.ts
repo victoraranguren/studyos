@@ -187,7 +187,9 @@ export async function syncStateToSupabase(
       });
       if (cfgErr) continue;
 
-      if (state.subjects.length > 0) {
+      if (state.subjects.length === 0) {
+        await supabase.from('subjects').delete().neq('id', '__none__');
+      } else {
         const { error: subjErr } = await supabase.from('subjects').upsert(
           state.subjects.map((s) => ({
             id: s.id,
@@ -195,7 +197,7 @@ export async function syncStateToSupabase(
             name: s.name,
             semester: s.semester,
             credits: s.credits,
-            professor: s.professor,
+            professor: s.professor || '',
             professor_contact: s.professorContact || '',
             section: s.section,
             modality: s.modality,
@@ -208,7 +210,9 @@ export async function syncStateToSupabase(
         if (subjErr) continue;
       }
 
-      if (state.schedule.length > 0) {
+      if (state.schedule.length === 0) {
+        await supabase.from('schedule_blocks').delete().neq('id', '__none__');
+      } else {
         const { error: schedErr } = await supabase
           .from('schedule_blocks')
           .upsert(
@@ -226,7 +230,9 @@ export async function syncStateToSupabase(
         if (schedErr) continue;
       }
 
-      if (state.tasks.length > 0) {
+      if (state.tasks.length === 0) {
+        await supabase.from('academic_tasks').delete().neq('id', '__none__');
+      } else {
         const { error: taskErr } = await supabase
           .from('academic_tasks')
           .upsert(

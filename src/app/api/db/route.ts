@@ -285,16 +285,6 @@ export async function GET() {
   try {
     await ensureStudyOsTables();
 
-    const existingConfig = await prisma.studentConfigRow.findUnique({
-      where: { id: "default_student" },
-    });
-    const subjectCount = await prisma.subjectRow.count();
-
-    // Si la base de datos está totalmente virgen, sembramos los datos iniciales de UNEFA
-    if (!existingConfig && subjectCount === 0) {
-      await persistFullStateToDb(INITIAL_ACADEMIC_STATE);
-    }
-
     const [cfgRow, subjRows, schedRows, taskRows] = await Promise.all([
       prisma.studentConfigRow.findUnique({ where: { id: "default_student" } }),
       prisma.subjectRow.findMany({ orderBy: { createdAt: "asc" } }),
