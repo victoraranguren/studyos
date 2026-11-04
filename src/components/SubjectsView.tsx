@@ -196,25 +196,28 @@ export function SubjectsView({
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                    <div className="grid grid-cols-2 gap-2">
                       {summary.cortes.map((c) => (
                         <div
                           key={c.corte}
-                          className="p-2 rounded-xl bg-slate-950 border border-slate-800"
+                          className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-between gap-2 whitespace-nowrap"
                         >
-                          <div className="text-base font-bold text-white">
-                            C{c.corte} (25%)
+                          <div>
+                            <div className="text-sm font-bold text-white">
+                              Corte {c.corte}{' '}
+                              <span className="text-xs text-muted">(25%)</span>
+                            </div>
+                            <div className="text-xs text-emerald-400 font-semibold">
+                              {c.averageGrade20 !== null
+                                ? `Prom: ${c.averageGrade20}/20`
+                                : 'Sin evaluar'}
+                            </div>
                           </div>
-                          <div className="text-base font-extrabold text-white mt-0.5">
+                          <div className="text-sm font-extrabold text-white">
                             {c.earnedPoints20.toFixed(2)}
-                            <span className="text-base text-white font-normal">
+                            <span className="text-xs text-muted font-normal">
                               /5
                             </span>
-                          </div>
-                          <div className="text-base text-emerald-400">
-                            {c.averageGrade20 !== null
-                              ? `${c.averageGrade20}/20`
-                              : '--'}
                           </div>
                         </div>
                       ))}

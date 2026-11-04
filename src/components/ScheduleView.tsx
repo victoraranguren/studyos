@@ -240,8 +240,8 @@ export function ScheduleView() {
         ))}
       </div>
 
-      {/* Grilla Semanal Lunes a Sábado */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+      {/* Grilla Semanal Lunes a Sábado (3 columnas amplias en desktop para evitar textos aplastados) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {DAYS_OF_WEEK.filter(
           (day) => mobileDayFilter === 'all' || day.value === mobileDayFilter
         ).map((day) => {
@@ -258,11 +258,11 @@ export function ScheduleView() {
               key={day.value}
               className="rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col overflow-hidden"
             >
-              <div className="px-4 py-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between">
-                <span className="text-base font-bold text-white">
+              <div className="px-4 py-3 bg-slate-950 border-b border-slate-800 flex items-center justify-between gap-2">
+                <span className="text-base font-bold text-white truncate">
                   {day.label}
                 </span>
-                <span className="text-base px-2 py-0.5 rounded-full bg-slate-800 text-white font-semibold">
+                <span className="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-white font-semibold whitespace-nowrap shrink-0">
                   {dayBlocks.length}{' '}
                   {dayBlocks.length === 1 ? 'bloque' : 'bloques'}
                 </span>
