@@ -442,7 +442,8 @@ export function GradesProgressionView({
                         {subject.name}
                       </h3>
                       <span className="text-base text-white font-medium">
-                        ({subject.credits} UC · {subject.professor})
+                        ({subject.credits} UC
+                        {subject.professor ? ` · ${subject.professor}` : ''})
                       </span>
                     </div>
                     <p className="text-sm text-muted mt-1">

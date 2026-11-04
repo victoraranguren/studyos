@@ -109,19 +109,25 @@ export function SubjectsView({
                     </button>
                   </div>
 
-                  {/* Profesor y Sección */}
+                  {/* Sección (y Profesor solo si se especificó) */}
                   <div className="space-y-1 text-base text-white bg-slate-950/80 p-3 rounded-xl border border-slate-800/80">
-                    <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-white font-medium">
-                        <User className="w-3.5 h-3.5 text-blue-400" />
-                        {subject.professor}
-                      </span>
-                      <span className="font-mono text-base text-white">
+                    <div className="flex items-center justify-between gap-2">
+                      {subject.professor ? (
+                        <span className="flex items-center gap-1.5 text-white font-medium">
+                          <User className="w-3.5 h-3.5 text-blue-400" />
+                          {subject.professor}
+                        </span>
+                      ) : (
+                        <span className="text-sm text-muted">
+                          Semestre {subject.semester} · {subject.modality}
+                        </span>
+                      )}
+                      <span className="font-mono text-sm sm:text-base text-white">
                         Sec: {subject.section}
                       </span>
                     </div>
                     {subject.professorContact && (
-                      <div className="flex items-center gap-1.5 text-base text-white">
+                      <div className="flex items-center gap-1.5 text-sm text-white">
                         <Mail className="w-3.5 h-3.5 text-white" />
                         {subject.professorContact}
                       </div>

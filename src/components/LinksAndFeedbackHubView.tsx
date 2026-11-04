@@ -246,9 +246,11 @@ export function LinksAndFeedbackHubView({
                       <h4 className="text-base font-bold text-white">
                         {task.title}
                       </h4>
-                      <p className="text-sm text-muted">
-                        Prof. {subj?.professor}
-                      </p>
+                      {subj?.professor && (
+                        <p className="text-sm text-muted">
+                          Prof. {subj.professor}
+                        </p>
+                      )}
                     </div>
 
                     {/* Edición directa de Feedback del Profesor y Nota personal */}

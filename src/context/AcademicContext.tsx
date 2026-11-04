@@ -32,7 +32,7 @@ import {
   syncStateToSupabase,
 } from '@/lib/supabase';
 
-const STORAGE_KEY = 'unefa_studyos_state_v1';
+const STORAGE_KEY = 'unefa_studyos_state_v2';
 
 interface AcademicContextValue {
   state: AcademicDatabaseState;
@@ -125,7 +125,28 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
         if (defaultStorageMode === 'supabase' && isSupabaseConfigured) {
           const remote = await fetchAllFromSupabase();
           if (remote && mounted) {
-            if (remote.subjects.length > 0) {
+            const hasOldFakeDemo = remote.subjects.some(
+              (s) => s.id === 'subj-isw1' || s.professor === 'Ing. Carlos Méndez'
+            );
+            if (hasOldFakeDemo) {
+              const supabase = getSupabaseClient();
+              if (supabase) {
+                await supabase
+                  .from('subjects')
+                  .delete()
+                  .in('id', [
+                    'subj-isw1',
+                    'subj-bd1',
+                    'subj-io',
+                    'subj-so',
+                    'subj-arq',
+                    'subj-din',
+                  ]);
+              }
+              skipNextAutoSyncRef.current = true;
+              setState(INITIAL_ACADEMIC_STATE);
+              await syncStateToSupabase(INITIAL_ACADEMIC_STATE);
+            } else if (remote.subjects.length > 0) {
               skipNextAutoSyncRef.current = true;
               setState(remote);
             } else {
@@ -491,6 +512,14 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
       STORAGE_KEY,
       JSON.stringify(INITIAL_ACADEMIC_STATE)
     );
+    const supabase = getSupabaseClient();
+    if (supabase && defaultStorageMode === 'supabase') {
+      supabase
+        .from('subjects')
+        .delete()
+        .neq('id', '__none__')
+        .then(() => syncStateToSupabase(INITIAL_ACADEMIC_STATE));
+    }
   }, []);
 
   const clearAllData = useCallback(() => {
@@ -502,6 +531,10 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
     };
     setState(emptyState);
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(emptyState));
+    const supabase = getSupabaseClient();
+    if (supabase && defaultStorageMode === 'supabase') {
+      supabase.from('subjects').delete().neq('id', '__none__').then();
+    }
   }, [state.config]);
 
   const importStateJSON = useCallback((jsonStr: string) => {

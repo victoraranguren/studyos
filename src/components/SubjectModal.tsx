@@ -86,6 +86,9 @@ export function SubjectModal({
     setName(tpl.name);
     setSemester(tpl.semester);
     setCredits(tpl.credits);
+    setGeneralNotes(
+      `Horas: ${tpl.hoursT}T / ${tpl.hoursP}P / ${tpl.hoursL}L (${tpl.credits} UC) · Prelación: ${tpl.prerequisites} · Desbloquea: ${tpl.unlocks}`
+    );
   };
 
   const handleSave = (e: React.FormEvent) => {
@@ -96,8 +99,8 @@ export function SubjectModal({
       code: code.trim() || 'SYC-0000',
       name: name.trim(),
       semester: Number(semester) || 6,
-      credits: Number(credits) || 4,
-      professor: professor.trim() || 'Por asignar',
+      credits: Number.isNaN(Number(credits)) ? 4 : Number(credits),
+      professor: professor.trim(),
       professorContact: professorContact.trim(),
       section: section.trim() || '06S-2614-D1',
       modality,
@@ -164,12 +167,19 @@ export function SubjectModal({
                 className="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-base text-white"
               >
                 <option value="">
-                  -- Seleccionar materia del pensum o escribir manualmente abajo --
+                  -- Seleccionar materia del Pensum UNEFA 2010 (Sem. 1 al 10) --
                 </option>
-                {UNEFA_SISTEMAS_PENSUM.map((tpl) => (
-                  <option key={tpl.code} value={tpl.code}>
-                    Sem. {tpl.semester} · {tpl.code} - {tpl.name} ({tpl.credits} UC)
-                  </option>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((sem) => (
+                  <optgroup key={sem} label={`Semestre ${sem}`}>
+                    {UNEFA_SISTEMAS_PENSUM.filter(
+                      (tpl) => tpl.semester === sem
+                    ).map((tpl) => (
+                      <option key={tpl.code} value={tpl.code}>
+                        [{tpl.code}] {tpl.name} ({tpl.credits} UC · Prelación:{' '}
+                        {tpl.prerequisites})
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </div>
@@ -224,7 +234,7 @@ export function SubjectModal({
               </label>
               <input
                 type="number"
-                min={1}
+                min={0}
                 max={6}
                 value={credits}
                 onChange={(e) => setCredits(Number(e.target.value))}
@@ -261,11 +271,11 @@ export function SubjectModal({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold uppercase tracking-wider text-muted mb-1.5">
-                Profesor(a)
+                Profesor(a) (Opcional)
               </label>
               <input
                 type="text"
-                placeholder="Ej: Ing. Carlos Méndez"
+                placeholder="Opcional (puedes dejarlo en blanco)"
                 value={professor}
                 onChange={(e) => setProfessor(e.target.value)}
                 className="w-full rounded-xl bg-slate-950 border border-slate-700 px-3.5 py-2 text-base text-white"
@@ -273,11 +283,11 @@ export function SubjectModal({
             </div>
             <div>
               <label className="block text-sm font-semibold uppercase tracking-wider text-muted mb-1.5">
-                Contacto / Correo / Grupo del Docente
+                Contacto del Docente (Opcional)
               </label>
               <input
                 type="text"
-                placeholder="correo@unefa.edu.ve o Telegram"
+                placeholder="Opcional (correo o teléfono)"
                 value={professorContact}
                 onChange={(e) => setProfessorContact(e.target.value)}
                 className="w-full rounded-xl bg-slate-950 border border-slate-700 px-3.5 py-2 text-base text-white"
