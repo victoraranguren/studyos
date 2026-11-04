@@ -1,5 +1,5 @@
 import { StudyOSApp } from '@/components/StudyOSApp';
 
 export default function HomePage() {
-  return <StudyOSApp />;
+  return <StudyOSApp section="resumen" />;
 }

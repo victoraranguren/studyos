@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useAcademic } from '@/context/AcademicContext';
 import {
   AcademicTask,
@@ -40,7 +42,7 @@ import {
   Sun,
 } from 'lucide-react';
 
-type ActiveSection =
+export type ActiveSection =
   | 'resumen'
   | 'planner'
   | 'cortes'
@@ -48,7 +50,11 @@ type ActiveSection =
   | 'materias'
   | 'recursos';
 
-export function StudyOSApp() {
+interface StudyOSAppProps {
+  section?: ActiveSection;
+}
+
+export function StudyOSApp({ section }: StudyOSAppProps) {
   const {
     state,
     isHydrated,
@@ -58,7 +64,16 @@ export function StudyOSApp() {
     isSupabaseReady,
   } = useAcademic();
 
-  const [activeSection, setActiveSection] = useState<ActiveSection>('resumen');
+  const pathname = usePathname();
+  const activeSection: ActiveSection = useMemo(() => {
+    if (section) return section;
+    if (pathname?.startsWith('/planner')) return 'planner';
+    if (pathname?.startsWith('/cortes')) return 'cortes';
+    if (pathname?.startsWith('/horarios')) return 'horarios';
+    if (pathname?.startsWith('/materias')) return 'materias';
+    if (pathname?.startsWith('/recursos')) return 'recursos';
+    return 'resumen';
+  }, [section, pathname]);
 
   // Modales
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
@@ -153,6 +168,7 @@ export function StudyOSApp() {
 
   const navItems: {
     id: ActiveSection;
+    href: string;
     label: string;
     shortLabel: string;
     icon: React.ComponentType<{ className?: string }>;
@@ -160,12 +176,14 @@ export function StudyOSApp() {
   }[] = [
     {
       id: 'resumen',
+      href: '/',
       label: 'Resumen General',
       shortLabel: 'Resumen',
       icon: LayoutDashboard,
     },
     {
       id: 'planner',
+      href: '/planner',
       label: 'Planner y Tiempos sin Rigidez',
       shortLabel: 'Planner',
       icon: ListChecks,
@@ -173,12 +191,14 @@ export function StudyOSApp() {
     },
     {
       id: 'cortes',
+      href: '/cortes',
       label: '4 Cortes (25%) y Progresión',
       shortLabel: '4 Cortes / Notas',
       icon: Calculator,
     },
     {
       id: 'horarios',
+      href: '/horarios',
       label: 'Horario Semanal',
       shortLabel: 'Horarios',
       icon: Calendar,
@@ -186,6 +206,7 @@ export function StudyOSApp() {
     },
     {
       id: 'materias',
+      href: '/materias',
       label: 'Materias UNEFA',
       shortLabel: 'Materias',
       icon: BookOpen,
@@ -193,6 +214,7 @@ export function StudyOSApp() {
     },
     {
       id: 'recursos',
+      href: '/recursos',
       label: 'Links y Feedback Profesor',
       shortLabel: 'Links / Feedback',
       icon: MessageSquareQuote,
@@ -301,10 +323,9 @@ export function StudyOSApp() {
             const Icon = item.icon;
             const active = activeSection === item.id;
             return (
-              <button
+              <Link
                 key={item.id}
-                type="button"
-                onClick={() => setActiveSection(item.id)}
+                href={item.href}
                 className={`px-3.5 py-3 text-base font-bold border-b-2 flex items-center gap-2 whitespace-nowrap transition-all ${
                   active
                     ? 'border-blue-500 text-blue-400 bg-blue-500/5'
@@ -324,7 +345,7 @@ export function StudyOSApp() {
                     {item.badge}
                   </span>
                 )}
-              </button>
+              </Link>
             );
           })}
         </div>
@@ -336,10 +357,9 @@ export function StudyOSApp() {
           <div className="space-y-6">
             {/* Tarjetas KPI de Resumen */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <button
-                type="button"
-                onClick={() => setActiveSection('materias')}
-                className="p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-blue-500/40 text-left transition-all space-y-2"
+              <Link
+                href="/materias"
+                className="p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-blue-500/40 text-left transition-all space-y-2 block"
               >
                 <div className="flex items-center justify-between text-sm font-semibold uppercase tracking-wider text-muted">
                   <span>Materias Inscritas</span>
@@ -352,12 +372,11 @@ export function StudyOSApp() {
                   {dashboardStats.totalCredits} Unidades de Crédito (UC) ·{' '}
                   {state.schedule.length} bloques horarios
                 </div>
-              </button>
+              </Link>
 
-              <button
-                type="button"
-                onClick={() => setActiveSection('cortes')}
-                className="p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-emerald-500/40 text-left transition-all space-y-2"
+              <Link
+                href="/cortes"
+                className="p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-emerald-500/40 text-left transition-all space-y-2 block"
               >
                 <div className="flex items-center justify-between text-sm font-semibold uppercase tracking-wider text-muted">
                   <span>Proyección 4 Cortes (25% c/u)</span>
@@ -372,12 +391,11 @@ export function StudyOSApp() {
                 <div className="text-base text-white">
                   Índice ponderado proyectado · Mínimo UNEFA: 10.0 pts
                 </div>
-              </button>
+              </Link>
 
-              <button
-                type="button"
-                onClick={() => setActiveSection('planner')}
-                className="p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/40 text-left transition-all space-y-2"
+              <Link
+                href="/planner"
+                className="p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-indigo-500/40 text-left transition-all space-y-2 block"
               >
                 <div className="flex items-center justify-between text-sm font-semibold uppercase tracking-wider text-muted">
                   <span>Tiempo Estimado Sin Rigidez</span>
@@ -390,12 +408,11 @@ export function StudyOSApp() {
                   En {dashboardStats.pendingTasks.length} entregas activas ·
                   Ritmo cómodo: {state.config.weeklyComfortHours}h/sem
                 </div>
-              </button>
+              </Link>
 
-              <button
-                type="button"
-                onClick={() => setActiveSection('recursos')}
-                className="p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-amber-500/40 text-left transition-all space-y-2"
+              <Link
+                href="/recursos"
+                className="p-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-amber-500/40 text-left transition-all space-y-2 block"
               >
                 <div className="flex items-center justify-between text-sm font-semibold uppercase tracking-wider text-muted">
                   <span>Links y Feedback Docente</span>
@@ -408,7 +425,7 @@ export function StudyOSApp() {
                 <div className="text-base text-white">
                   Repositorios, PDFs y correcciones de cada profesor
                 </div>
-              </button>
+              </Link>
             </div>
 
             {/* Grid Principal del Resumen: 75% (9/12) Estado de los 4 Cortes y 25% (3/12) Próximas Entregas */}
@@ -425,13 +442,12 @@ export function StudyOSApp() {
                       Haz clic en cualquier materia para simular notas o desglosar sus 4 cortes
                     </p>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setActiveSection('cortes')}
+                  <Link
+                    href="/cortes"
                     className="text-base font-semibold text-blue-400 hover:text-blue-300"
                   >
                     Abrir Calculador Completo →
-                  </button>
+                  </Link>
                 </div>
 
                 <div className="space-y-3">
@@ -523,13 +539,12 @@ export function StudyOSApp() {
                     </div>
                   </div>
                   <div>
-                    <button
-                      type="button"
-                      onClick={() => setActiveSection('planner')}
+                    <Link
+                      href="/planner"
                       className="text-sm font-semibold text-blue-400 hover:text-blue-300"
                     >
                       Ver todas en el Planner →
-                    </button>
+                    </Link>
                   </div>
 
                   <div className="space-y-3">
@@ -606,13 +621,12 @@ export function StudyOSApp() {
                       <MessageSquareQuote className="w-4 h-4 text-amber-400" />
                       Últimos Feedbacks y Correcciones del Profesor
                     </h3>
-                    <button
-                      type="button"
-                      onClick={() => setActiveSection('recursos')}
+                    <Link
+                      href="/recursos"
                       className="text-base text-blue-400 hover:text-blue-300 font-semibold"
                     >
                       Bitácora completa →
-                    </button>
+                    </Link>
                   </div>
 
                   <div className="space-y-2.5">
@@ -698,10 +712,9 @@ export function StudyOSApp() {
           const Icon = item.icon;
           const active = activeSection === item.id;
           return (
-            <button
+            <Link
               key={item.id}
-              type="button"
-              onClick={() => setActiveSection(item.id)}
+              href={item.href}
               className={`flex flex-col items-center justify-center py-1.5 px-1 rounded-xl text-sm font-semibold transition-all ${
                 active
                   ? 'bg-blue-600/20 text-blue-400'
@@ -710,7 +723,7 @@ export function StudyOSApp() {
             >
               <Icon className="w-5 h-5 mb-0.5 shrink-0" />
               <span className="truncate max-w-full">{item.shortLabel.split(' ')[0]}</span>
-            </button>
+            </Link>
           );
         })}
       </nav>
