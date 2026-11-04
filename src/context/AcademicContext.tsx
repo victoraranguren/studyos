@@ -125,8 +125,16 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
         if (defaultStorageMode === 'supabase' && isSupabaseConfigured) {
           const remote = await fetchAllFromSupabase();
           if (remote && mounted) {
-            skipNextAutoSyncRef.current = true;
-            setState(remote);
+            if (remote.subjects.length > 0) {
+              skipNextAutoSyncRef.current = true;
+              setState(remote);
+            } else {
+              // Primera vez que se conecta con las tablas vacías en Supabase: subir datos actuales automáticamente
+              const initialToSync = raw
+                ? (JSON.parse(raw) as AcademicDatabaseState)
+                : INITIAL_ACADEMIC_STATE;
+              await syncStateToSupabase(initialToSync);
+            }
           }
         }
       } catch (e) {
@@ -293,6 +301,10 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
       ...prev,
       schedule: prev.schedule.filter((b) => b.id !== id),
     }));
+    const supabase = getSupabaseClient();
+    if (supabase && defaultStorageMode === 'supabase') {
+      supabase.from('schedule_blocks').delete().eq('id', id).then();
+    }
   }, []);
 
   const addTask = useCallback(
@@ -334,6 +346,10 @@ export function AcademicProvider({ children }: { children: React.ReactNode }) {
       ...prev,
       tasks: prev.tasks.filter((t) => t.id !== id),
     }));
+    const supabase = getSupabaseClient();
+    if (supabase && defaultStorageMode === 'supabase') {
+      supabase.from('academic_tasks').delete().eq('id', id).then();
+    }
   }, []);
 
   const updateTaskStatus = useCallback((id: string, status: TaskStatus) => {
