@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+:root,
+html.dark {
+  color-scheme: dark;
+  --bg-page: #020617;
+  --bg-card: #0f172a;
+  --bg-surface: #020617;
+  --border-subtle: #1e293b;
+  --text-primary: #ffffff;
+  --text-muted: #cbd5e1;
+}
+
+html.light {
+  color-scheme: light;
+  --bg-page: #f1f5f9;
+  --bg-card: #ffffff;
+  --bg-surface: #f8fafc;
+  --border-subtle: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-muted: #475569;
+}
+
+body {
+  background-color: var(--bg-page);
+  color: var(--text-primary);
+  font-size: 16px;
+  line-height: 1.5;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ============================================================================
+   ADAPTACIÓN AUTOMÁTICA PARA TEMA CLARO (html.light) Y TEMA OSCURO (html.dark)
+   ============================================================================ */
+
+/* Fondos principales y tarjetas en Tema Claro */
+html.light .bg-slate-950,
+html.light .bg-slate-950\/90,
+html.light .bg-slate-950\/80,
+html.light .bg-slate-950\/70,
+html.light .bg-slate-950\/60,
+html.light .bg-slate-950\/40 {
+  background-color: #f8fafc !important;
+}
+
+html.light header.bg-slate-950\/90 {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+}
+
+html.light .bg-slate-900,
+html.light .bg-slate-900\/95,
+html.light .bg-slate-900\/90,
+html.light .bg-slate-900\/60 {
+  background-color: #ffffff !important;
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.06);
+}
+
+html.light .bg-slate-800 {
+  background-color: #e2e8f0 !important;
+}
+
+html.light .hover\:bg-slate-800:hover,
+html.light .hover\:bg-slate-700:hover,
+html.light .hover\:bg-slate-800\/90:hover {
+  background-color: #cbd5e1 !important;
+}
+
+/* Bordes en Tema Claro */
+html.light .border-slate-900,
+html.light .border-slate-800,
+html.light .border-slate-800\/90,
+html.light .border-slate-800\/80,
+html.light .border-slate-800\/70,
+html.light .border-slate-800\/60 {
+  border-color: #e2e8f0 !important;
+}
+
+html.light .border-slate-700,
+html.light .border-slate-700\/80,
+html.light .border-slate-600 {
+  border-color: #cbd5e1 !important;
+}
+
+/* Textos principales y secundarios ("un poco grisesito") en ambos temas */
+html.dark .text-muted {
+  color: #cbd5e1 !important; /* Gris claro suave y muy legible en modo oscuro */
+}
+
+html.light .text-muted {
+  color: #475569 !important; /* Gris medio nítido en modo claro */
+}
+
+html.light .text-white {
+  color: #0f172a !important;
+}
+
+/* Preservar texto blanco en botones sólidos azules/esmeralda e iconos del logo */
+html.light .bg-blue-600,
+html.light .bg-blue-600.text-white,
+html.light .bg-emerald-600,
+html.light .bg-emerald-600.text-white,
+html.light .from-blue-600 .text-white {
+  color: #ffffff !important;
+}
+
+/* Ajustar colores de acento para excelente contraste en Tema Claro */
+html.light .text-blue-400,
+html.light .text-blue-300,
+html.light .text-blue-200 {
+  color: #1d4ed8 !important;
+}
+
+html.light .text-emerald-400,
+html.light .text-emerald-300,
+html.light .text-emerald-200 {
+  color: #047857 !important;
+}
+
+html.light .text-amber-400,
+html.light .text-amber-300,
+html.light .text-amber-200\/90 {
+  color: #b45309 !important;
+}
+
+html.light .text-indigo-400,
+html.light .text-indigo-300,
+html.light .text-indigo-200 {
+  color: #4338ca !important;
+}
+
+html.light .text-rose-400,
+html.light .text-rose-300,
+html.light .text-rose-200 {
+  color: #be123c !important;
+}
+
+html.light .text-teal-400,
+html.light .text-teal-300 {
+  color: #0f766e !important;
+}
+
+html.light .text-purple-400,
+html.light .text-purple-300 {
+  color: #6d28d9 !important;
+}
+
+html.light .placeholder-white\/70::placeholder {
+  color: #64748b !important;
+}
+
+/* Gradientes suaves en Tema Claro */
+html.light .from-slate-900,
+html.light .via-slate-950,
+html.light .to-slate-900,
+html.light .to-slate-950 {
+  --tw-gradient-from: #eff6ff !important;
+  --tw-gradient-via: #f8fafc !important;
+  --tw-gradient-to: #ffffff !important;
+}
+
+/* Mandatory native modal dialog scroll containment per modern-web-guidance */
+dialog:modal {
+  overscroll-behavior: contain;
+}
+
+dialog::backdrop {
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
