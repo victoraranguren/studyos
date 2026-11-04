@@ -37,6 +37,10 @@ export function LinksAndFeedbackHubView({
 
   // Formulario rápido para anexar un link a una tarea existente
   const [quickTaskId, setQuickTaskId] = useState(state.tasks[0]?.id || '');
+  const effectiveQuickTaskId =
+    quickTaskId && state.tasks.some((t) => t.id === quickTaskId)
+      ? quickTaskId
+      : state.tasks[0]?.id || '';
   const [quickTitle, setQuickTitle] = useState('');
   const [quickUrl, setQuickUrl] = useState('');
   const [quickType, setQuickType] = useState<AttachmentType>('github');
@@ -81,8 +85,8 @@ export function LinksAndFeedbackHubView({
 
   const handleQuickAddAttachment = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!quickTaskId || !quickTitle.trim() || !quickUrl.trim()) return;
-    addAttachment(quickTaskId, {
+    if (!effectiveQuickTaskId || !quickTitle.trim() || !quickUrl.trim()) return;
+    addAttachment(effectiveQuickTaskId, {
       title: quickTitle.trim(),
       url: quickUrl.trim(),
       type: quickType,
@@ -93,10 +97,10 @@ export function LinksAndFeedbackHubView({
 
   const handleQuickLocalFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !quickTaskId) return;
+    if (!file || !effectiveQuickTaskId) return;
     const objectUrl = URL.createObjectURL(file);
     const sizeKB = Math.round(file.size / 1024);
-    addAttachment(quickTaskId, {
+    addAttachment(effectiveQuickTaskId, {
       title: file.name,
       url: objectUrl,
       type: file.name.endsWith('.pdf') ? 'pdf' : 'file',
@@ -371,7 +375,7 @@ export function LinksAndFeedbackHubView({
                   Trabajo / Evaluación Destino
                 </label>
                 <select
-                  value={quickTaskId}
+                  value={effectiveQuickTaskId}
                   onChange={(e) => setQuickTaskId(e.target.value)}
                   className="w-full rounded-xl bg-slate-950 border border-slate-700 px-3 py-2 text-base text-white"
                 >

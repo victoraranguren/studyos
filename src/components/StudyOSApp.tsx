@@ -672,7 +672,9 @@ export function StudyOSApp() {
           />
         )}
 
-        {activeSection === 'horarios' && <ScheduleView />}
+        {activeSection === 'horarios' && (
+          <ScheduleView onOpenNewSubject={handleOpenNewSubject} />
+        )}
 
         {activeSection === 'materias' && (
           <SubjectsView

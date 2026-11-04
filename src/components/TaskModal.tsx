@@ -75,6 +75,10 @@ export function TaskModal({
   const [subjectId, setSubjectId] = useState<string>(
     editingTask?.subjectId ?? (defaultSubjectId || state.subjects[0]?.id || '')
   );
+  const effectiveSubjectId =
+    subjectId && state.subjects.some((s) => s.id === subjectId)
+      ? subjectId
+      : state.subjects[0]?.id || '';
   const [corte, setCorte] = useState<CorteNumber>(
     editingTask?.corte ?? defaultCorte
   );
@@ -157,7 +161,7 @@ export function TaskModal({
   const otherTasksInSameCorteWeight = state.tasks
     .filter(
       (t) =>
-        t.subjectId === subjectId &&
+        t.subjectId === effectiveSubjectId &&
         t.corte === corte &&
         t.id !== editingTask?.id
     )
@@ -177,7 +181,7 @@ export function TaskModal({
   // Preview de recomendación flexible en vivo
   const previewRecommendation = getFlexibleTimeRecommendation({
     id: editingTask?.id || 'preview',
-    subjectId,
+    subjectId: effectiveSubjectId,
     corte,
     title: title || 'Nueva tarea',
     description,
@@ -255,13 +259,13 @@ export function TaskModal({
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !subjectId) return;
+    if (!title.trim() || !effectiveSubjectId) return;
 
     const finalStatus: TaskStatus =
       parsedGrade20 !== null && status !== 'calificado' ? 'calificado' : status;
 
     const payload = {
-      subjectId,
+      subjectId: effectiveSubjectId,
       corte,
       title: title.trim(),
       description: description.trim(),
@@ -383,7 +387,7 @@ export function TaskModal({
                   </label>
                   <select
                     required
-                    value={subjectId}
+                    value={effectiveSubjectId}
                     onChange={(e) => setSubjectId(e.target.value)}
                     className="w-full rounded-xl bg-slate-950 border border-slate-700 px-3.5 py-2.5 text-base text-white focus:border-blue-500 focus:outline-none"
                   >
